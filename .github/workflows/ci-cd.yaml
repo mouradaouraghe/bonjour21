@@ -72,6 +72,14 @@ jobs:
       - name: Update deployment image
         run: |
           sed -i "s|image:.*|image: ${{ steps.login-ecr.outputs.registry }}/bonjour21:latest|" deployment.yaml
+      - name: Copy k8s manifests to VM master
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "k8s/*"
+          target: "/home/${{ secrets.SSH_USER }}/app/"
 
             # 10) Deploy on Kubernetes via SSH
       - name: Deploy to Kubernetes via SSH
