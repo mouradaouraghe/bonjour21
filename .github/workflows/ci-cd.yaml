@@ -73,8 +73,16 @@ jobs:
         run: |
           sed -i "s|image:.*|image: ${{ steps.login-ecr.outputs.registry }}/bonjour21:latest|" deployment.yaml
 
-      # 12) Deploy to Kubernetes
-      - name: Deploy to Kubernetes cluster
-        run: |
-          kubectl apply -f deployment.yaml
-          kubectl apply -f service.yaml
+            # 10) Deploy on Kubernetes via SSH
+      - name: Deploy to Kubernetes via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /home/bonjour/app  # dossier où tu veux mettre les manifests
+            echo "Déploiement..."
+            kubectl apply -f deployment.yaml
+            kubectl apply -f service.yaml
+            kubectl rollout status deployment/spring-app
