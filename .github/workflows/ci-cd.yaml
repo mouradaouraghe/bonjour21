@@ -20,7 +20,7 @@ jobs:
           java-version: "21"
           distribution: "temurin"
 
-      # 3) Maven Build
+      # 3) Maven Build with aven
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
