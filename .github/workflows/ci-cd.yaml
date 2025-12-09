@@ -91,6 +91,6 @@ jobs:
           script: |
             cd /home/bonjour/app  # dossier où tu veux mettre les manifests
             echo "Déploiement..."
-            kubectl apply -f deployment.yaml
-            kubectl apply -f service.yaml
+            kubectl apply -f k8s/deployment.yaml
+            kubectl apply -f k8s/service.yaml
             kubectl rollout status deployment/spring-app
