@@ -71,7 +71,7 @@ jobs:
       # 11) Update image tag in manifest
       - name: Update deployment image
         run: |
-          sed -i "s|image:.*|image: ${{ steps.login-ecr.outputs.registry }}/bonjour21:latest|" deployment.yaml
+          sed -i "s|image:.*|image: ${{ steps.login-ecr.outputs.registry }}/bonjour21:latest|" k8s/deployment.yaml
       - name: Copy k8s manifests to VM master
         uses: appleboy/scp-action@v0.1.7
         with:
