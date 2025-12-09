@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: spring-app
-  labels:
-    app: spring-app
 spec:
   replicas: 1
   selector:
@@ -14,6 +12,8 @@ spec:
       labels:
         app: spring-app
     spec:
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: spring-app
           image: 831047457807.dkr.ecr.us-east-1.amazonaws.com/bonjour21:latest
