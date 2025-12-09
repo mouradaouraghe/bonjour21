@@ -62,3 +62,19 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: "${{ steps.login-ecr.outputs.registry }}/bonjour21:latest"
+      # 10) Configure kubectl with kubeconfig
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+
+      # 11) Update image tag in manifest
+      - name: Update deployment image
+        run: |
+          sed -i "s|image:.*|image: ${{ steps.login-ecr.outputs.registry }}/bonjour21:latest|" deployment.yaml
+
+      # 12) Deploy to Kubernetes
+      - name: Deploy to Kubernetes cluster
+        run: |
+          kubectl apply -f deployment.yaml
+          kubectl apply -f service.yaml
