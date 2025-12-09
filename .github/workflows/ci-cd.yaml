@@ -1,0 +1,50 @@
+name: CI/CD Pipeline Spring App
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-test-sonar-docker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Set up JDK
+      uses: actions/setup-java@v5
+      with:
+        java-version: "21"
+        distribution: "temurin"
+
+    - name: Build with Maven
+      run: mvn clean package -DskipTests
+
+    - name: Run Tests
+      run: mvn test
+
+    - name: SonarQube Scan
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: mvn sonar:sonar \ -Dsonar.projectKey=bonjour21 \ -Dsonar.host.url=http://98.93.97.30:9000 \ -Dsonar.login=$SONAR_TOKEN
+
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build Docker image
+      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/bonjour21:latest .
+
+    - name: Scan image with Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: "${{ secrets.DOCKER_USERNAME }}/bonjour21:latest"
+
+    - name: Push image to Docker Hub
+      run: docker push ${{ secrets.DOCKER_USERNAME }}/bonjour21:latest
