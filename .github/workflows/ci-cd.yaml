@@ -91,6 +91,8 @@ jobs:
           script: |
             cd /home/bonjour/app  # dossier où tu veux mettre les manifests
             echo "Déploiement..."
+            kubectl apply -f k8s/secret.yaml
+            kubectl apply -f k8s/bonjours.yaml
             kubectl apply -f k8s/pv.yaml
             kubectl apply -f k8s/pvc.yaml
             kubectl apply -f k8s/deployment.yaml
