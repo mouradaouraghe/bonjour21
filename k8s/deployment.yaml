@@ -17,6 +17,14 @@ spec:
       containers:
         - name: spring-app
           image: 831047457807.dkr.ecr.us-east-1.amazonaws.com/bonjour21:latest
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql:3306/bonjourdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+            - name: SPRING_DATASOURCE_USERNAME
+              value: bonjour
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: bonjour
+
           ports:
             - containerPort: 8084
 
