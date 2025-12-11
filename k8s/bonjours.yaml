@@ -25,7 +25,7 @@ spec:
                   name: mysql-secret
                   key: mysql-root-password
             - name: MYSQL_DATABASE
-              value: bonjour
+              value: bonjourdb
           ports:
             - containerPort: 3306
           volumeMounts:
