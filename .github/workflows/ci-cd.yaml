@@ -96,5 +96,5 @@ jobs:
             kubectl apply -f k8s/pvc.yaml
             kubectl apply -f k8s/bonjours.yaml
             kubectl apply -f k8s/deployment.yaml
-            kubectl apply -f k8s/service.yaml
-            kubectl rollout status deployment/spring-app
+            kubectl apply -f k8s/servicem.yaml
+            kubectl apply -f k8s/services.yaml
