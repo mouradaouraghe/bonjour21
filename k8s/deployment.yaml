@@ -16,7 +16,7 @@ spec:
         - name: regcred
       containers:
         - name: spring-app
-          image: 831047457807.dkr.ecr.us-east-1.amazonaws.com/bonjour21:latest
+          image: public.ecr.aws/p7m4r1k4/bonjour20:latest
           env:
             - name: SPRING_DATASOURCE_URL
               value: jdbc:mysql://mysql:3306/bonjourdb
