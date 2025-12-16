@@ -7,6 +7,5 @@ spec:
     storage: 500Mi
   accessModes:
     - ReadWriteOnce
-  storageClassName: manual
-  hostPath:
-    path: "/home/bonjour/data/mysql"   # dossier sur ta VM
+  hostPath:       # pour dev local / minikube
+    path: /mnt/data/mysql
