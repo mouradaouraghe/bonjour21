@@ -20,21 +20,18 @@ jobs:
           java-version: "21"
           distribution: "temurin"
 
-      # 3) Maven Build with aven
+      # 3) Maven Build
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
-      # 4) Run tests
-      #- name: Run Tests
-        #run: mvn test -Dspring.profiles.active=test
-
-      # 5) SonarQube Scan
+      # 4) SonarQube Scan
       - name: SonarQube Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn sonar:sonar -Dsonar.projectKey=bonjour21 -Dsonar.host.url=http://3.85.173.70:9000 -Dsonar.login=$SONAR_TOKEN
+        run: |
+          mvn sonar:sonar -Dsonar.projectKey=bonjour21 -Dsonar.host.url=http://3.85.173.70:9000 -Dsonar.login=$SONAR_TOKEN
 
-      # 6) Configure AWS credentials
+      # 5) Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -42,36 +39,38 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # 7) Login ECR
-      - name: Login to Amazon ECR
-        id: login-ecr
+      # 6) Login ECR Public
+      - name: Login to Amazon ECR Public
         uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
 
-      # 8) Build and push to ECR
-      - name: Build, tag, and push image to ECR
+      # 7) Build & Push Docker Image (ECR Public)
+      - name: Build, tag, and push image to ECR Public
         env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: bonjour21
-          IMAGE_TAG: latest
+          IMAGE: public.ecr.aws/p7m4r1k4/bonjour20:latest
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker build -t $IMAGE .
+          docker push $IMAGE
 
-      # 9) Trivy Scan (from ECR)
+      # 8) Trivy Scan
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "${{ steps.login-ecr.outputs.registry }}/bonjour21:latest"
-      # 10) Configure kubectl with kubeconfig
+          image-ref: public.ecr.aws/p7m4r1k4/bonjour20:latest
+
+      # 9) Configure kubectl
       - name: Set up kubeconfig
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
 
-      # 11) Update image tag in manifest
+      # 10) Update image in Kubernetes manifest
       - name: Update deployment image
         run: |
-          sed -i "s|image:.*|image: ${{ steps.login-ecr.outputs.registry }}/bonjour21:latest|" k8s/deployment.yaml
+          sed -i "s|image:.*|image: public.ecr.aws/p7m4r1k4/bonjour20:latest|" k8s/deployment.yaml
+
+      # 11) Copy k8s manifests to master node
       - name: Copy k8s manifests to VM master
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -81,7 +80,7 @@ jobs:
           source: "k8s/*"
           target: "/home/${{ secrets.SSH_USER }}/app/"
 
-            # 10) Deploy on Kubernetes via SSH
+      # 12) Deploy on Kubernetes via SSH
       - name: Deploy to Kubernetes via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -89,12 +88,13 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /home/bonjour/app  # dossier où tu veux mettre les manifests
+            cd /home/${{ secrets.SSH_USER }}/app
             echo "Déploiement..."
             kubectl apply -f k8s/secret.yaml
-            kubectl apply -f k8s/bonjours.yaml
+            
             kubectl apply -f k8s/pv.yaml
             kubectl apply -f k8s/pvc.yaml
+            kubectl apply -f k8s/bonjours.yaml
             kubectl apply -f k8s/deployment.yaml
             kubectl apply -f k8s/service.yaml
             kubectl rollout status deployment/spring-app
