@@ -8,8 +8,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000") // Allows requests from http://localhost:3000
-
+@CrossOrigin(
+    origins = "http://172.189.157.245:30187",
+    allowedHeaders = "*",
+    methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE}
+)
 @RequestMapping("/api")
 public class ProductContoller {
     private ProductRepository productRepository;
